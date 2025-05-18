@@ -6,7 +6,7 @@ require("dotenv").config();
 const app = express();
 
 app.use(cors({
-  origin: 'https://fascinating-clafoutis-c7400b.netlify.app/', //accept request from frontend
+  origin: 'https://fascinating-clafoutis-c7400b.netlify.app', //accept request from frontend
   credentials: true
 }));
 app.use(express.json());
