@@ -18,14 +18,6 @@ app.use("/api/order", require("./route/order_route"));
 app.use("/api/trade", require("./route/trade_route"));
 app.use("/api/balance", require("./route/balance_route"));
 
-const path = require('path');
-
-app.use(express.static(path.join(__dirname, '../frontend/app/dist')));
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/app/dist/index.html'));
-});
-
 app.get("/ping", async (req, res) => {
   try {
       const conn = mongoose.connection.readyState;
