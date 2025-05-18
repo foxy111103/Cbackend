@@ -14,37 +14,57 @@ router.post("/Order", async (req, res) => {
     const oppositeType = type === "buy" ? "sell" : "buy";
     
     const match=await Order.findOne({
+        userId: { $ne: userId },
         type: oppositeType,
         token,
         price,
         status: "open",
+        
     })
 
     if (match) {
-        
-        if (newOrder.type === "buy" ){
-            buyUserbalance = await Balances.findOne({ userid: newOrder.userId });
-            sellUserbalance= await Balances.findOne({userid: match.userId});
-            if (!buyUserbalance || !sellUserbalance) {
+        buyUserbalance = await Balances.findOne({ userid: newOrder.userId });
+        sellUserbalance= await Balances.findOne({userid: match.userId});
+        if (!buyUserbalance || !sellUserbalance) {
                 return res.status(404).json({ message: "User balance not found" });
             }
+        if (newOrder.type === "buy" ){
+            
+            if (buyUserbalance.usdt < amount * price) {
+                return res.status(400).json({ message: "Insufficient USDT balance" });
+            }
+            
             buyUserbalance.usdt=buyUserbalance.usdt-amount*price;
             buyUserbalance.eth=buyUserbalance.eth+amount;
-            await buyUserbalance.save();
             
             sellUserbalance.usdt=sellUserbalance.usdt+amount*price;
             sellUserbalance.eth=sellUserbalance.eth-amount;
-            await sellUserbalance.save();
+            
 
-        };
+        }
+        else{
+            if (buyUserbalance.eth < amount) {
+                return res.status(400).json({ message: "Insufficient ETH balance" });
+            }
+            buyUserbalance.usdt=buyUserbalance.usdt+amount*price;
+            buyUserbalance.eth=buyUserbalance.eth-amount;
+            
+            
+            sellUserbalance.usdt=sellUserbalance.usdt-amount*price;
+            sellUserbalance.eth=sellUserbalance.eth+amount;
+            
+        }
+        await buyUserbalance.save();
+        await sellUserbalance.save();
+
         newOrder.status = "matched";
         match.status = "matched";
         await newOrder.save();
         await match.save();
 
         const trade = new Trade({
-            BuyId: newOrder.userId,
-            SellId: match.userId,
+            BuyId: type === "buy" ? userId : match.userId,
+            SellId: type === "sell" ? userId : match.userId,
             amount: Math.min(amount, match.amount),
             price,
         });
@@ -54,18 +74,18 @@ router.post("/Order", async (req, res) => {
             message: "Order matched and trade executed",
             trade,
           });
-        
-
     } 
     else {
         newOrder.status = "open";
         await newOrder.save();
-    }
 
-    return res.status(201).json({
+        return res.status(201).json({
         message: "Order created successfully",
         order: newOrder,
       });
+    }
+
+    
 
 
 });
