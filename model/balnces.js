@@ -5,6 +5,14 @@ const schema = mongoose.Schema({
         ref: "User",
         required: [true, "User ID is required"]
     },
+    wallet:{
+        type: String,
+        required: [true, "Wallet address is required"]
+    },
+    privateKey:{
+        type: String,
+        required: [true, "Private key is required"]
+    },
     eth:{
         type: Number,
         required: [true, "ETH status is required"]

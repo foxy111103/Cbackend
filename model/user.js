@@ -13,12 +13,14 @@ const schema = mongoose.Schema({
         type: String,
         required: [true, "Password is required"]
     },
-    AccountAddress :{
+    AccountAddress: {
         type: String,
-        required: [true, "Account address is required"],
+        required: [true, "Ethereum address is required"],
         unique: true
-    },
-})
+    }
+
+
+});
 
 const User = mongoose.model('User', schema);
 module.exports = User;
